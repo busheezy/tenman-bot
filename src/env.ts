@@ -7,7 +7,7 @@ const envSchema = z.object({
   DISCORD_CLIENT_ID: z.string(),
   DISCORD_TOKEN: z.string(),
   DISCORD_GUILD_ID: z.string(),
-  DISCORD_ADMINS: z.string().transform((value) => value.split(',')),
+  DISCORD_CAPTAIN_ROLE_NAME: z.string(),
   TENMAN_SERVER_IDS: z.string().transform((value) => value.split(',')),
 });
 

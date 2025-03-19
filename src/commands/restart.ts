@@ -1,19 +1,20 @@
-import { GuildMember, SlashCommandBuilder } from 'discord.js';
+import { GuildMember, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { CommandInteraction } from 'discord.js';
 import { pteroClient } from '../pteroClient';
 import Bluebird from 'bluebird';
 import { env } from '../env';
+import { isCaptain } from '../utils/isCaptain';
 
-const { DISCORD_ADMINS, TENMAN_SERVER_IDS } = env;
+const { TENMAN_SERVER_IDS } = env;
 
 const data = new SlashCommandBuilder().setName('restart').setDescription('Restart the servers.');
 
 async function execute(interaction: CommandInteraction) {
   if (interaction.member instanceof GuildMember) {
-    if (!DISCORD_ADMINS.includes(interaction.member.user.id)) {
+    if (!isCaptain(interaction.member)) {
       await interaction.reply({
         content: 'You do not have permission to use this command.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       return;
@@ -27,7 +28,7 @@ async function execute(interaction: CommandInteraction) {
 
     await interaction.reply({
       content: `The servers have been restarted.`,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 }
