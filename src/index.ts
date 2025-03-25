@@ -2,6 +2,7 @@ import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { env } from './env';
 import './initCommands';
 import { commandsCollection } from './commands';
+import { getButtonHandlerById } from './buttonHandler';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -37,6 +38,30 @@ client.on(Events.InteractionCreate, async (interaction) => {
         flags: MessageFlags.Ephemeral,
       });
     }
+  }
+});
+
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isButton()) {
+    return;
+  }
+
+  const buttonHandler = await getButtonHandlerById(interaction.customId);
+
+  if (!buttonHandler) {
+    console.error(`No button handler matching ${interaction.customId} was found.`);
+    return;
+  }
+
+  try {
+    await buttonHandler(interaction);
+  } catch (error) {
+    console.error(error);
+
+    await interaction.reply({
+      content: 'There was an error while executing this button handler!',
+      flags: MessageFlags.Ephemeral,
+    });
   }
 });
 

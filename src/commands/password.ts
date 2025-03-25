@@ -1,11 +1,15 @@
-import Bluebird from 'bluebird';
-import { CommandInteraction, GuildMember, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { env } from '../env';
-import { getPteroServer } from '../services/ptero/getServer';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  CommandInteraction,
+  GuildMember,
+  MessageFlags,
+  SlashCommandBuilder,
+} from 'discord.js';
 import { isCaptain } from '../utils/isCaptain';
 import { serversConfig } from '../services/ServersConfig';
-
-const { TENMAN_SERVER_IDS } = env;
+import { registerButtonHandler } from '../buttonHandler';
 
 const serverChoices = serversConfig.map((server) => {
   return {
@@ -37,13 +41,38 @@ async function execute(interaction: CommandInteraction) {
       return;
     }
 
-    await Bluebird.mapSeries(TENMAN_SERVER_IDS, async (serverId) => {
-      const serverResponse = await getPteroServer(serverId);
+    const serverId = interaction.options.get('server')?.value;
 
-      console.log(serverResponse.attributes.name);
+    const confirm = new ButtonBuilder()
+      .setLabel('Confirm Password Change')
+      .setStyle(ButtonStyle.Danger);
+
+    const cancel = new ButtonBuilder()
+      .setCustomId('cancel')
+      .setLabel('Cancel')
+      .setStyle(ButtonStyle.Secondary);
+
+    registerButtonHandler(confirm, async (buttonInteraction) => {
+      await buttonInteraction.reply({
+        content: `Password for server ${serverId} has been changed.`,
+        flags: MessageFlags.Ephemeral,
+      });
     });
 
-    await interaction.reply('woo');
+    registerButtonHandler(cancel, async (buttonInteraction) => {
+      await buttonInteraction.reply({
+        content: 'Password change has been cancelled.',
+        flags: MessageFlags.Ephemeral,
+      });
+    });
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(cancel, confirm);
+
+    await interaction.reply({
+      content: `Are you sure you want to change the password for server ${serverId}?`,
+      components: [row],
+      flags: MessageFlags.Ephemeral,
+    });
   }
 }
 

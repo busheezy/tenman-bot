@@ -41,6 +41,7 @@
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
     "generate-password": "^1.7.1",
+    "uuid": "^11.1.0",
     "zod": "^3.24.2"
   }
 }
