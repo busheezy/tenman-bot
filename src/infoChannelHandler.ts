@@ -38,7 +38,7 @@ export async function updateInfoChannel(client: Client<true>) {
             const ipAndPort = formatIpAndPort(serverConfig.ip, serverConfig.port);
 
             await buttonInteraction.reply({
-              content: `**${serverConfig.name} Connect Information**\n||\`\`${ipAndPort}; password ${password}\`\`||`,
+              content: `**${serverConfig.name} Connect Information**\n||\`\`\`${ipAndPort}; password ${password}\`\`\`||`,
               flags: MessageFlags.Ephemeral,
             });
           },

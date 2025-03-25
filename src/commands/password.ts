@@ -80,7 +80,7 @@ async function execute(interaction: CommandInteraction) {
             const ipAndPort = formatIpAndPort(server.ip, server.port);
 
             await buttonInteraction.update({
-              content: `Password for \`\`${serverName}\`\` has been changed: ||\`\`${ipAndPort}; password ${newPass}\`\`||`,
+              content: `Password for \`\`${serverName}\`\` has been changed: ||\`\`\`${ipAndPort}; password ${newPass}\`\`\`||`,
               components: [],
             });
           },
