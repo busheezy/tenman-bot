@@ -20,7 +20,7 @@ const serverChoices = serversConfig.map((server) => {
   };
 });
 
-const serverOptionKey = 'server-name';
+const serverOptionKey = 'name';
 
 const data = new SlashCommandBuilder()
   .setName('password')
@@ -29,7 +29,6 @@ const data = new SlashCommandBuilder()
 data.addStringOption((option) => {
   return option
     .setName(serverOptionKey)
-    .setNameLocalization('en-US', 'Server Name')
     .setDescription('Select the server')
     .setRequired(true)
     .addChoices(...serverChoices);

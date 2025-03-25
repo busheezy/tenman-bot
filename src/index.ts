@@ -49,7 +49,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const buttonHandler = await getButtonHandlerById(interaction.customId);
 
   if (!buttonHandler) {
-    console.error(`No button handler matching ${interaction.customId} was found.`);
+    await interaction.reply({
+      content: 'This action can no longer be performed. Try again.',
+      flags: MessageFlags.Ephemeral,
+    });
+
     return;
   }
 

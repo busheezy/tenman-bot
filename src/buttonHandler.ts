@@ -12,12 +12,7 @@ export function registerButtonHandler(
   const customId = uuidv4();
 
   buttonBuilder.setCustomId(customId);
-
   buttonHandlers[customId] = handler;
-
-  setTimeout(() => {
-    delete buttonHandlers[customId];
-  }, 60_000);
 
   return buttonBuilder;
 }
