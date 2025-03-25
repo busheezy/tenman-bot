@@ -26,7 +26,7 @@ const data = new SlashCommandBuilder()
 
 data.addStringOption((option) => {
   return option
-    .setName('serverId')
+    .setName('server-id')
     .setDescription('Select the server')
     .setRequired(true)
     .addChoices(...serverChoices);
@@ -43,7 +43,7 @@ async function execute(interaction: CommandInteraction) {
       return;
     }
 
-    const serverId = interaction.options.get('serverId')?.value as string;
+    const serverId = interaction.options.get('server-id')?.value as string;
 
     if (!serverId) {
       await interaction.reply({
