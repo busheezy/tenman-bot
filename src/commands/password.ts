@@ -20,13 +20,16 @@ const serverChoices = serversConfig.map((server) => {
   };
 });
 
+const serverOptionKey = 'server-name';
+
 const data = new SlashCommandBuilder()
   .setName('password')
   .setDescription('Change the server password.');
 
 data.addStringOption((option) => {
   return option
-    .setName('server-id')
+    .setName(serverOptionKey)
+    .setNameLocalization('en-US', 'Server Name')
     .setDescription('Select the server')
     .setRequired(true)
     .addChoices(...serverChoices);
@@ -43,7 +46,7 @@ async function execute(interaction: CommandInteraction) {
       return;
     }
 
-    const serverId = interaction.options.get('server-id')?.value as string;
+    const serverId = interaction.options.get(serverOptionKey)?.value as string;
 
     if (!serverId) {
       await interaction.reply({
