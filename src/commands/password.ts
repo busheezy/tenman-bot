@@ -8,8 +8,10 @@ import {
   SlashCommandBuilder,
 } from 'discord.js';
 import { isCaptain } from '../utils/isCaptain';
-import { serversConfig } from '../services/ServersConfig';
+import { serversConfig, getServerById } from '../services/ServersConfig';
 import { registerButtonHandler } from '../buttonHandler';
+import { getRandomPassword } from '../utils/getRandomPassword';
+import { setPassword } from '../services/ptero/setPassword';
 
 const serverChoices = serversConfig.map((server) => {
   return {
@@ -24,7 +26,7 @@ const data = new SlashCommandBuilder()
 
 data.addStringOption((option) => {
   return option
-    .setName('server')
+    .setName('serverId')
     .setDescription('Select the server')
     .setRequired(true)
     .addChoices(...serverChoices);
@@ -41,11 +43,21 @@ async function execute(interaction: CommandInteraction) {
       return;
     }
 
-    const serverId = interaction.options.get('server')?.value;
+    const serverId = interaction.options.get('serverId')?.value as string;
 
-    const confirm = new ButtonBuilder()
-      .setLabel('Confirm Password Change')
-      .setStyle(ButtonStyle.Danger);
+    if (!serverId) {
+      await interaction.reply({
+        content: 'Invalid server ID.',
+        flags: MessageFlags.Ephemeral,
+      });
+
+      return;
+    }
+
+    const server = getServerById(serverId);
+    const serverName = server?.name ?? serverId;
+
+    const confirm = new ButtonBuilder().setLabel('Confirm').setStyle(ButtonStyle.Danger);
 
     const cancel = new ButtonBuilder()
       .setCustomId('cancel')
@@ -53,23 +65,31 @@ async function execute(interaction: CommandInteraction) {
       .setStyle(ButtonStyle.Secondary);
 
     registerButtonHandler(confirm, async (buttonInteraction) => {
-      await buttonInteraction.reply({
-        content: `Password for server ${serverId} has been changed.`,
-        flags: MessageFlags.Ephemeral,
+      const newPass = getRandomPassword();
+
+      await setPassword(serverId, newPass);
+
+      const ipAndPort = server?.port
+        ? `connect ${server?.ip}:${server?.port}`
+        : `connect ${server?.ip}`;
+
+      await buttonInteraction.update({
+        content: `Password for \`\`${serverName}\`\` has been changed: ||\`\`${ipAndPort}; password ${newPass}\`\`||`,
+        components: [],
       });
     });
 
     registerButtonHandler(cancel, async (buttonInteraction) => {
-      await buttonInteraction.reply({
+      await buttonInteraction.update({
         content: 'Password change has been cancelled.',
-        flags: MessageFlags.Ephemeral,
+        components: [],
       });
     });
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(cancel, confirm);
 
     await interaction.reply({
-      content: `Are you sure you want to change the password for server ${serverId}?`,
+      content: `Are you sure you want to change the password for: \`\`${serverName}\`\`?`,
       components: [row],
       flags: MessageFlags.Ephemeral,
     });

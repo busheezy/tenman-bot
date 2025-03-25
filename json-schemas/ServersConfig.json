@@ -6,8 +6,14 @@
       "items": {
         "additionalProperties": false,
         "properties": {
+          "ip": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
+          },
+          "port": {
+            "type": "number"
           },
           "serverId": {
             "type": "string"
@@ -15,7 +21,8 @@
         },
         "required": [
           "name",
-          "serverId"
+          "serverId",
+          "ip"
         ],
         "type": "object"
       },
