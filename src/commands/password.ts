@@ -12,6 +12,7 @@ import { serversConfig, getServerById } from '../services/ServersConfig';
 import { registerButtonHandler } from '../buttonHandler';
 import { getRandomPassword } from '../utils/getRandomPassword';
 import { setPassword } from '../services/ptero/setPassword';
+import { formatIpAndPort } from '../utils/formatIpAndPort';
 
 const serverChoices = serversConfig.map((server) => {
   return {
@@ -57,7 +58,17 @@ async function execute(interaction: CommandInteraction) {
     }
 
     const server = getServerById(serverId);
-    const serverName = server?.name ?? serverId;
+
+    if (!server) {
+      await interaction.reply({
+        content: 'An error occurred while fetching the server.',
+        flags: MessageFlags.Ephemeral,
+      });
+
+      return;
+    }
+
+    const serverName = server.name ?? serverId;
 
     const confirm = new ButtonBuilder().setLabel('Confirm').setStyle(ButtonStyle.Danger);
 
@@ -66,27 +77,31 @@ async function execute(interaction: CommandInteraction) {
       .setLabel('Cancel')
       .setStyle(ButtonStyle.Secondary);
 
-    registerButtonHandler(confirm, async (buttonInteraction) => {
-      const newPass = getRandomPassword();
+    registerButtonHandler(
+      confirm,
+      async (buttonInteraction) => {
+        const newPass = getRandomPassword();
 
-      await setPassword(serverId, newPass);
+        await setPassword(serverId, newPass);
 
-      const ipAndPort = server?.port
-        ? `connect ${server?.ip}:${server?.port}`
-        : `connect ${server?.ip}`;
+        const ipAndPort = formatIpAndPort(server.ip, server.port);
 
-      await buttonInteraction.update({
-        content: `Password for \`\`${serverName}\`\` has been changed: ||\`\`${ipAndPort}; password ${newPass}\`\`||`,
-        components: [],
-      });
-    });
+        await buttonInteraction.update({
+          content: `Password for \`\`${serverName}\`\` has been changed: ||\`\`${ipAndPort}; password ${newPass}\`\`||`,
+        });
+      },
+      true,
+    );
 
-    registerButtonHandler(cancel, async (buttonInteraction) => {
-      await buttonInteraction.update({
-        content: 'Password change has been cancelled.',
-        components: [],
-      });
-    });
+    registerButtonHandler(
+      cancel,
+      async (buttonInteraction) => {
+        await buttonInteraction.update({
+          content: 'Password change has been cancelled.',
+        });
+      },
+      true,
+    );
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(cancel, confirm);
 

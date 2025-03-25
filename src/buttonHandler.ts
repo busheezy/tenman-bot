@@ -8,11 +8,19 @@ type ButtonInteractionHandler = (interaction: ButtonInteraction) => Promise<void
 export function registerButtonHandler(
   buttonBuilder: ButtonBuilder,
   handler: ButtonInteractionHandler,
+  runOnce = false,
 ): ButtonBuilder {
   const customId = uuidv4();
 
   buttonBuilder.setCustomId(customId);
-  buttonHandlers[customId] = handler;
+
+  buttonHandlers[customId] = async (interaction: ButtonInteraction) => {
+    await handler(interaction);
+
+    if (runOnce) {
+      delete buttonHandlers[customId];
+    }
+  };
 
   return buttonBuilder;
 }

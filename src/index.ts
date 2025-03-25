@@ -1,13 +1,16 @@
 import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
-import { env } from './env';
-import './initCommands';
-import { commandsCollection } from './commands';
 import { getButtonHandlerById } from './buttonHandler';
+import { commandsCollection } from './commands';
+import { env } from './env';
+import { updateInfoChannel } from './infoChannelHandler';
+import './initCommands';
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-client.once(Events.ClientReady, (readyClient) => {
+client.once(Events.ClientReady, async (readyClient) => {
   console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+
+  await updateInfoChannel(readyClient);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
