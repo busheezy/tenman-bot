@@ -9,7 +9,7 @@ export function registerButtonHandler(
   buttonBuilder: ButtonBuilder,
   handler: ButtonInteractionHandler,
 ): ButtonBuilder {
-  const customId = uuidv4().split('-')[0];
+  const customId = uuidv4();
 
   buttonBuilder.setCustomId(customId);
 
@@ -17,7 +17,7 @@ export function registerButtonHandler(
 
   setTimeout(() => {
     delete buttonHandlers[customId];
-  }, 60_1000);
+  }, 60_000);
 
   return buttonBuilder;
 }
