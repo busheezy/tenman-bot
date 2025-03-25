@@ -1,28 +1,48 @@
-import { ButtonBuilder, ButtonInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction } from 'discord.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const buttonHandlers: Record<string, (interaction: ButtonInteraction) => Promise<void>> = {};
 
 type ButtonInteractionHandler = (interaction: ButtonInteraction) => Promise<void>;
 
-export function registerButtonHandler(
-  buttonBuilder: ButtonBuilder,
-  handler: ButtonInteractionHandler,
-  runOnce = false,
-): ButtonBuilder {
-  const customId = uuidv4();
+interface RegisterButtonHandlerOptions {
+  buttonDefintions: {
+    button: ButtonBuilder;
+    handler: ButtonInteractionHandler;
+  }[];
+  runOnce?: boolean;
+}
 
-  buttonBuilder.setCustomId(customId);
+export function registerButtonHandler(options: RegisterButtonHandlerOptions) {
+  const { buttonDefintions, runOnce = false } = options;
 
-  buttonHandlers[customId] = async (interaction: ButtonInteraction) => {
-    await handler(interaction);
+  const buttonGroupIds: string[] = [];
 
-    if (runOnce) {
-      delete buttonHandlers[customId];
-    }
-  };
+  function deleteAllOfInteractionsButtonHandlers() {
+    buttonGroupIds.forEach((buttonGroupId) => {
+      delete buttonHandlers[buttonGroupId];
+    });
+  }
 
-  return buttonBuilder;
+  const registeredButtons = buttonDefintions.map((buttonDefintion) => {
+    const { button, handler } = buttonDefintion;
+    const customId = uuidv4();
+
+    button.setCustomId(customId);
+    buttonGroupIds.push(customId);
+
+    buttonHandlers[customId] = async (interaction: ButtonInteraction) => {
+      await handler(interaction);
+
+      if (runOnce) {
+        deleteAllOfInteractionsButtonHandlers();
+      }
+    };
+
+    return button;
+  });
+
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(...registeredButtons);
 }
 
 export async function getButtonHandlerById(

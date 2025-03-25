@@ -1,11 +1,4 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  Client,
-  MessageFlags,
-  TextChannel,
-} from 'discord.js';
+import { ButtonBuilder, ButtonStyle, Client, MessageFlags, TextChannel } from 'discord.js';
 import { env } from './env';
 import Bluebird from 'bluebird';
 
@@ -36,22 +29,25 @@ export async function updateInfoChannel(client: Client<true>) {
   await textChannel.send('**Server Information**');
 
   await Bluebird.mapSeries(serversConfig, async (serverConfig) => {
-    const button = new ButtonBuilder().setLabel(serverConfig.name).setStyle(ButtonStyle.Primary);
+    const row = registerButtonHandler({
+      buttonDefintions: [
+        {
+          button: new ButtonBuilder().setLabel(serverConfig.name).setStyle(ButtonStyle.Primary),
+          handler: async (buttonInteraction) => {
+            const password = await getPassword(serverConfig.serverId);
+            const ipAndPort = formatIpAndPort(serverConfig.ip, serverConfig.port);
 
-    registerButtonHandler(button, async (buttonInteraction) => {
-      const password = await getPassword(serverConfig.serverId);
-      const ipAndPort = formatIpAndPort(serverConfig.ip, serverConfig.port);
-
-      await buttonInteraction.reply({
-        content: `||\`\`${ipAndPort}; password ${password}\`\`||`,
-        flags: MessageFlags.Ephemeral,
-      });
+            await buttonInteraction.reply({
+              content: `**${serverConfig.name} Connect Information**\n||\`\`${ipAndPort}; password ${password}\`\`||`,
+              flags: MessageFlags.Ephemeral,
+            });
+          },
+        },
+      ],
     });
 
-    const rows = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
-
     await textChannel.send({
-      components: [rows],
+      components: [row],
     });
   });
 
