@@ -1,0 +1,25 @@
+{
+  "$ref": "#/definitions/ServersConfig",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "ServersConfig": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "serverId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "serverId"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  }
+}

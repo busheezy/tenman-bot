@@ -1,23 +1,32 @@
-import { GuildMember, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { CommandInteraction } from 'discord.js';
-import { pteroClient } from '../pteroClient';
 import Bluebird from 'bluebird';
-import generator from 'generate-password';
+import { CommandInteraction, GuildMember, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { env } from '../env';
+import { getPteroServer } from '../services/ptero/getServer';
 import { isCaptain } from '../utils/isCaptain';
+import { serversConfig } from '../services/ServersConfig';
 
 const { TENMAN_SERVER_IDS } = env;
+
+const serverChoices = serversConfig.map((server) => {
+  return {
+    name: server.name,
+    value: server.serverId,
+  };
+});
 
 const data = new SlashCommandBuilder()
   .setName('password')
   .setDescription('Change the server password.');
 
-async function execute(interaction: CommandInteraction) {
-  const password = generator.generate({
-    length: 10,
-    numbers: true,
-  });
+data.addStringOption((option) => {
+  return option
+    .setName('server')
+    .setDescription('Select the server')
+    .setRequired(true)
+    .addChoices(...serverChoices);
+});
 
+async function execute(interaction: CommandInteraction) {
   if (interaction.member instanceof GuildMember) {
     if (!isCaptain(interaction.member)) {
       await interaction.reply({
@@ -28,21 +37,13 @@ async function execute(interaction: CommandInteraction) {
       return;
     }
 
-    await Bluebird.mapSeries(TENMAN_SERVER_IDS, async (serverIdentifier) => {
-      await pteroClient.put(`/servers/${serverIdentifier}/startup/variable`, {
-        key: 'PASSWORD',
-        value: password,
-      });
+    await Bluebird.mapSeries(TENMAN_SERVER_IDS, async (serverId) => {
+      const serverResponse = await getPteroServer(serverId);
 
-      await pteroClient.post(`/servers/${serverIdentifier}/command`, {
-        command: `sv_password "${password}"`,
-      });
+      console.log(serverResponse.attributes.name);
     });
 
-    await interaction.reply({
-      content: `The password has been changed to ||\`\`${password}\`\`|| for all servers.`,
-      flags: MessageFlags.Ephemeral,
-    });
+    await interaction.reply('woo');
   }
 }
 

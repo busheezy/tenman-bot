@@ -1,0 +1,5 @@
+{
+  "json.schemas": [
+    { "fileMatch": ["/serversConfig.json"], "url": "./json-schemas/ServersConfig.json" }
+  ]
+}

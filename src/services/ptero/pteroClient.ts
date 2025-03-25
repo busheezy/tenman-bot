@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from './env';
+import { env } from '../../env';
 
 export const pteroClient = axios.create({
   baseURL: `${env.PTERO_URL}/api/client`,
